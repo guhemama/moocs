@@ -1,0 +1,9 @@
+# Week 1
+
+## Queries with for
+_for_ expressions can be used like a database query language, like SQL.
+
+* case class Books(title: String, authors: List[String])
+* for (b <- books; a <- b.authors if a startsWith "Bird") yield b.title
+  
+It works the same like generators in PHP, it only has a different syntax.
