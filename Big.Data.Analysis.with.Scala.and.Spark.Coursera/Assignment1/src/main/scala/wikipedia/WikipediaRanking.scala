@@ -14,7 +14,7 @@ object WikipediaRanking {
     "JavaScript", "Java", "PHP", "Python", "C#", "C++", "Ruby", "CSS",
     "Objective-C", "Perl", "Scala", "Haskell", "MATLAB", "Clojure", "Groovy")
 
-  val conf: SparkConf = new SparkConf().setAppName("Wikipedia").setMaster("local")
+  val conf: SparkConf = new SparkConf().setAppName("Wikipedia").setMaster("local[4]")
 
   val sc: SparkContext = new SparkContext(conf)
 
@@ -40,7 +40,7 @@ object WikipediaRanking {
    *   several seconds.
    */
   def rankLangs(langs: List[String], rdd: RDD[WikipediaArticle]): List[(String, Int)] = {
-    langs.map(lang => (lang, occurrencesOfLang(lang, rdd)))
+    langs.map(lang => (lang, occurrencesOfLang(lang, rdd))).sortWith(_._2 > _._2)
   }
 
   /* Compute an inverted index of the set of articles, mapping each language
