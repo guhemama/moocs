@@ -69,3 +69,82 @@ Execution of a Spark program:
 5. Finally, SparkContext sends tasks for the executors to run.
 
 
+
+# Week 2 - Reduction Operations and Distributed Key-Value Pairs
+
+**Reduction operations** walk through a collection and combine neighbouring elements of the collection together to produce a single combined result.
+
+`fold` enables us to parallelize things, but it restricts us to always returning the same type.
+
+```scala
+def fold(z: A)(f: (A, A) => A): A
+```
+
+We also can use the `reduce` and `aggregate` on Spark collections. `aggregate` is a more desirable reduction operator a majority of the time, because it allows us to _project down from larger/more complex data types_.
+
+## Pair RDDs
+
+Often, when working with distributed data, it's useful to organize data into **key-value pairs**. In Spark, those are called **Pair RDDs**, and they are especially useful because they allow you to act on each key in parallel or regroup data across the network.
+
+When a RDD is created with a pair as its element type, Spark automatically ads a number of useful methods for pairs:
+
+```scala
+def groupByKey(): RDD[(K, Iterable[V])]
+def reduceByKey(func: (V, V) => V): RDD[(K, V)]
+def join[W](other: RDD[(K, W)]): RDD[(K, (V, W))]
+```
+
+Pair RDDs are most often created from already existing non-pair RDDs; for exemple, by using the `map` operation on RDDs.
+
+## Transformations and actions on Pair RDDs
+
+Important transformations defined on Pair RDDs (but not on regular RDDs):
+
+```scala
+// Breaks up a collection into two or more collections, grouping all values of
+// a pair that have the same key.
+def groupByKey(): RDD[(K, Iterable[V])]
+
+// Reduces the values of a key - it's like running groupByKey and then doing a
+// reduce operation
+def reduceByKey(func: (V, V) => V): RDD[(K, V)]
+
+// It applies a function to only the vaues of a Pair RDD
+def mapValues[U](f: V => U): RDD[(K, U)]
+
+// Returns a RDD with the keys of each tuple
+def keys: RDD[K]
+
+def join
+def leftOuterJoin
+def rightOuterJoin
+```
+
+Important action defined on Pair RDDs (but not on regular RDDs):
+
+```scala
+// It counts the number of elements per key in a Pair RDD, returning a normal
+// Scala Map mapping keys to counts.
+def countByKey(): Map[K, Long]
+```
+
+## Joins
+
+Joins are used to combine multiple RDDs.
+
+### Inner joins
+
+Inner joins return a new RDD containing combined pairs **whose keys are present in both input RDDs**.
+
+```scala
+def join[W](other: RDD[(K, W)]): RDD[(K, (V, W))]
+```
+
+### Outer joins
+
+Outer joins return a new RDD containing combined pairs **whose keys don't have to be present in both input RDDs**. They are particularly useful for customizing how the resulting joined RDD deals with missing keysl
+
+```scala
+def leftOuterJoin[W](other: RDD[(K, W)]): RDD[(K, (V, Option[W]))]
+def rightOuterJoin[W](other: RDD[(K, W)]): RDD[(K, (Option[V], W))]
+```
