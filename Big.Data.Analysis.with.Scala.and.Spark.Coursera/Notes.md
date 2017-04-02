@@ -148,3 +148,24 @@ Outer joins return a new RDD containing combined pairs **whose keys don't have t
 def leftOuterJoin[W](other: RDD[(K, W)]): RDD[(K, (V, Option[W]))]
 def rightOuterJoin[W](other: RDD[(K, W)]): RDD[(K, (Option[V], W))]
 ```
+
+
+
+# Week 3 - Partitioning and shuffling
+
+## Partitioning
+
+The data in a RDD is split into several _partitions_. Partitions never span multiple machines, and each machine in the cluster contains one or more partitions.
+
+Partitioning can bring substantial performance gains, especially in the face of shuffles.
+
+
+
+# Week 4 - SQL, dataframes and datasets
+
+## Spark SQL
+
+It suports relational processing both within Spark programs (on RDDs) and on external data sources with a friendly API, has high performance and easily supports new data sources as semi-structured data and external databases.
+
+
+
