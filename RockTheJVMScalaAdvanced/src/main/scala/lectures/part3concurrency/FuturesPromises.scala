@@ -2,7 +2,7 @@ package lectures.part3concurrency
 
 import scala.concurrent.{Await, Future, Promise}
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.util.{Failure, Random, Success}
+import scala.util.{Failure, Random, Success, Try}
 import scala.concurrent.duration._
 
 object FuturesPromises extends App {
@@ -137,4 +137,62 @@ object FuturesPromises extends App {
   producer.start()
 
   Thread.sleep(1000)
+
+  /**
+    * Exercise 1: fullfil a future immediately with a value.
+    */
+  def fulfillImmediately[T](value: T): Future[T] = Future(value)
+  println(fulfillImmediately(442))
+
+  /**
+    * Exercise 2: execute in sequence
+    */
+  def inSequence[A, B](f1: Future[A], f2: Future[B]): Future[B] = {
+    f1.flatMap(_ => f2)
+  }
+
+  /**
+    * Exercise 3: return the future that finishes first
+    */
+  def first[A](f1: Future[A], f2: Future[A]): Future[A] = {
+    val promise = Promise[A]
+
+    f1.onComplete(promise.tryComplete(_))
+    f2.onComplete(promise.tryComplete(_))
+
+    promise.future
+  }
+
+  /**
+    * Exercise 4: return the future that finishes last
+    */
+  def last[A](f1: Future[A], f2: Future[A]): Future[A] = {
+    val promiseFirst = Promise[A]
+    val promiseLast  = Promise[A]
+
+    def checkAndComplete(result: Try[A]) = {
+      if (!promiseFirst.tryComplete(result))
+        promiseLast.complete(result)
+    }
+
+    f1.onComplete(checkAndComplete)
+    f2.onComplete(checkAndComplete)
+
+    promiseLast.future
+  }
+
+  val slow = Future {
+    Thread.sleep(200)
+    43
+  }
+
+  val fast = Future {
+    Thread.sleep(10)
+    "42 again"
+  }
+
+  first(slow, fast).foreach(println)
+  last(slow, fast).foreach(println)
+
+  Thread.sleep(500)
 }
