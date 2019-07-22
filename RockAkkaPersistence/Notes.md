@@ -38,3 +38,15 @@ Snapshots let you store the entire state of something for faster recovery.
 - `saveSnapshot` lets you save snapshots.
 - The `SnapshotOffer(metadata, contents)` command will load the snapshot.
 - Best practice: handle `SaveSnapshotSuccess` and `SaveSnapshotFailure` commandas.
+
+### Recovery
+
+When recovering an actor, if the recovery fails `onRecoveryFailure` will be called.
+
+The method `recovery` is used to customize the recovery process.
+
+The method `recoveryFinished` will tell you if recovery has been finished yet or not. 
+
+To recover stateless actors, use `context.become` as normal.
+
+`persistAsync` is useful for high-throughput environments. It is not good when you depend on state mutation because of possible inconsistencies.
